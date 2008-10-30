@@ -52,7 +52,7 @@ module Yapra::Plugin::Filter
         end
         item
       end
-      cache.save_history(agent.history)
+      cache.save_history(agent.history) if cache
       
       data
     end

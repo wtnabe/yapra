@@ -22,7 +22,6 @@ module Yapra::Plugin::Feed
       urls.each do |url|
         logger.debug("Process: #{url}")
         source = agent.get(url, nil, url).body
-        cache.save_history(agent.history)
         rss = nil
         begin
           rss = RSS::Parser.parse(source)
@@ -33,6 +32,7 @@ module Yapra::Plugin::Feed
           data << item
         end
       end
+      cache.save_history(agent.history) if cache
       
       data
     end
