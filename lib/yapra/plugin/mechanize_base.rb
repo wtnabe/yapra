@@ -4,7 +4,12 @@ require 'yapra/plugin/base'
 
 class Yapra::Plugin::MechanizeBase < Yapra::Plugin::Base
   def agent
-    pipeline.context['mechanize_agent'] ||= WWW::Mechanize.new
+    if ( !pipeline.context['mechanize_agent'] )
+      pipeline.context['mechanize_agent'] = WWW::Mechanize.new
+      if config.has_key?('cache')
+        init_cache(config['cache'])
+      end
+    end
     pipeline.context['mechanize_agent']
   end
   
@@ -30,4 +35,28 @@ class Yapra::Plugin::MechanizeBase < Yapra::Plugin::Base
       end
     end
   end
+    
+  protected
+  #
+  # ex)
+  #
+  # config:
+  #   method: pstore
+  #   max_history: 30
+  #
+  def init_cache(opt)
+    require File.join(File.dirname(File.expand_path(__FILE__)),
+                                   'mechanize_cache',
+                                   opt['method'])
+    name = Object.module_eval("Yapra::Plugin::MechanizeCache::#{opt['method'].capitalize}")
+
+    m = pipeline.context['mechanize_agent']
+    m.max_history = opt['max_history'].to_i || 30
+
+    @cache = name.new(opt)
+    @cache.load_history.each { |h|
+      m.history << h
+    }
+  end
+  attr_reader :cache
 end

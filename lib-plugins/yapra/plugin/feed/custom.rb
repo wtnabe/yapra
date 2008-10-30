@@ -20,8 +20,9 @@ module Yapra::Plugin::Feed
   #           content_encoded: '<div><%= title %></div>'
   class Custom < Yapra::Plugin::MechanizeBase
     def run(data)
-      page    = agent.get(config['url'])
+      page    = agent.get(config['url'], nil, config['url'])
       root    = page.root
+      cache.save_history(agent.history)
       
       xconfig = config['extract_xpath']
       

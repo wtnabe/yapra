@@ -35,7 +35,7 @@ module Yapra::Plugin::Filter
 
         if regexp =~ url
           logger.debug "Process: #{url}"
-          page = agent.get(url)
+          page = agent.get(url, nil, url)
           sleep wait
 
           unless(item.instance_of?(RSS::RDF::Item))
@@ -52,6 +52,7 @@ module Yapra::Plugin::Filter
         end
         item
       end
+      cache.save_history(agent.history)
       
       data
     end
