@@ -51,12 +51,14 @@ class Yapra::Plugin::MechanizeBase < Yapra::Plugin::Base
     name = Object.module_eval("Yapra::Plugin::MechanizeCache::#{opt['method'].capitalize}")
 
     m = pipeline.context['mechanize_agent']
-    m.max_history = opt['max_history'].to_i || 30
+    cache = name.new(opt)
 
-    @cache = name.new(opt)
-    @cache.load_history.each { |h|
+    m.max_history = opt['max_history'].to_i || 30
+    cache.load_history.each { |h|
       m.history << h
     }
+    m.history_added = Proc.new {
+      cache.save_history(m.history)
+    }
   end
-  attr_reader :cache
 end

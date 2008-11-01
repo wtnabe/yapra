@@ -22,7 +22,6 @@ module Yapra::Plugin::Feed
     def run(data)
       page    = agent.get(config['url'], nil, config['url'])
       root    = page.root
-      cache.save_history(agent.history) if cache
       
       xconfig = config['extract_xpath']
       

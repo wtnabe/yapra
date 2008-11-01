@@ -32,7 +32,6 @@ module Yapra::Plugin::Feed
           data << item
         end
       end
-      cache.save_history(agent.history) if cache
       
       data
     end
