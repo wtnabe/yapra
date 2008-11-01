@@ -18,7 +18,14 @@ end
 class WWW::Mechanize
   alias_method :_get_, :get
 
-  def get(url)
-    _get_(url, nil, url)
+  def get(options, parameters = [], referer = nil)
+    if options.class != Hash
+      options = {:url => options}
+    end
+    if referer.nil?
+      referer = options[:url]
+    end
+
+    _get_(options, parameters, referer)
   end
 end
