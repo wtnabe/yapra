@@ -14,19 +14,19 @@ module Yapra::Plugin::MechanizeCache
       @path = nil
 
       if config.has_key?('path')
-        @path = config['path']        
+        @path = config['path']
       end
     end
 
     def load_history
       path = File.join(@path, 'history')
-      ret  = []
+      history  = []
 
       if (File.exist?(path) and File.size(path) > 0)
-        ret = Marshal.load(open(path))
+        history = Marshal.load(open(path))
       end
 
-      return ret
+      return history
     end
 
     def save_history(history)

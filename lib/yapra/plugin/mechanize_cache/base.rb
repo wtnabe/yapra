@@ -14,3 +14,11 @@ module Yapra::Plugin::MechanizeCache
   class Base < Yapra::Plugin::Base
   end
 end
+
+class WWW::Mechanize
+  alias_method :_get_, :get
+
+  def get(url)
+    _get_(url, nil, url)
+  end
+end
