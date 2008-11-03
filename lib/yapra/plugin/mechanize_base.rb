@@ -12,6 +12,29 @@ class Yapra::Plugin::MechanizeBase < Yapra::Plugin::Base
     end
     pipeline.context['mechanize_agent']
   end
+
+  def extract_feed_from url
+    logger.debug("Process: #{url}")
+    rss = nil
+
+    source = agent.get(url).body
+    if cache and cache.update_only and cache.not_modified
+      items = []
+    else
+      begin
+        rss = RSS::Parser.parse(source)
+      rescue
+        rss = RSS::Parser.parse(source, false)
+      end
+      if cache and cache.update_only
+        items = cache.updated_feed_items(url, rss.items)
+      else
+        items = rss.items
+      end
+    end
+
+    items
+  end
   
   def extract_attribute_from element, item
     if plugin_config['extract_xpath']
@@ -43,6 +66,7 @@ class Yapra::Plugin::MechanizeBase < Yapra::Plugin::Base
   # config:
   #   method: pstore
   #   max_history: 30
+  #   update_only: true
   #
   def init_cache(opt)
     require File.join(File.dirname(File.expand_path(__FILE__)),
@@ -51,14 +75,22 @@ class Yapra::Plugin::MechanizeBase < Yapra::Plugin::Base
     name = Object.module_eval("Yapra::Plugin::MechanizeCache::#{opt['method'].capitalize}")
 
     m = pipeline.context['mechanize_agent']
-    cache = name.new(opt)
+    @cache = name.new(opt)
 
-    m.max_history = opt['max_history'].to_i || 30
-    cache.load_history.each { |h|
+    m.max_history      = opt['max_history'].to_i || 30
+    @cache.max_history = m.max_history
+    @cache.update_only = opt['update_only'] || false
+    @cache.load_history.each { |h|
       m.history << h
     }
-    m.history_added = Proc.new {
-      cache.save_history(m.history)
+    m.history_added = Proc.new { |page|
+      if !page.respond_to?( 'parser' )
+        @cache.save_history(m.history)
+      end
+    }
+    m.post_connect_hooks << Proc.new { |params|
+      @cache.not_modified = (params[:response].message == "Not Modified")
     }
   end
+  attr_reader :cache
 end

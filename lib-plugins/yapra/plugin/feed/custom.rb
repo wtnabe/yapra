@@ -40,6 +40,9 @@ module Yapra::Plugin::Feed
         data << item
       end
       
+      if cache and cache.update_only
+        data = cache.updated_feed_items(config['url'], data)
+      end
       data
     end
   end

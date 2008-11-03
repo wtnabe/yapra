@@ -8,7 +8,7 @@ module Yapra::Plugin::Feed
   # 
   #     - module: RSS::load
   #       config:
-  #         uri: http://www.example.com/hoge.rdf
+  #         url: http://www.example.com/hoge.rdf
   #
   class Load < Yapra::Plugin::MechanizeBase
     def run(data)
@@ -20,17 +20,7 @@ module Yapra::Plugin::Feed
         end
       
       urls.each do |url|
-        logger.debug("Process: #{url}")
-        source = agent.get(url).body
-        rss = nil
-        begin
-          rss = RSS::Parser.parse(source)
-        rescue
-          rss = RSS::Parser.parse(source, false)
-        end
-        rss.items.each do |item|
-          data << item
-        end
+        data << extract_feed_from( url )
       end
       
       data

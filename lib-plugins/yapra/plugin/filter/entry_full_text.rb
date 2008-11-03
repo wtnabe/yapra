@@ -50,6 +50,10 @@ module Yapra::Plugin::Filter
           extract_attribute_from page.root, item
 
         end
+
+        if cache and cache.update_only
+          item = cache.updated_feed_items(url, item)
+        end
         item
       end
       
